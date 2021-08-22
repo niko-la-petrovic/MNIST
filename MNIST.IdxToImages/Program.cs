@@ -1,8 +1,10 @@
 ﻿using CommandLine;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Np.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -138,6 +140,7 @@ namespace MNIST.IdxToImages
             byte[] pixels = new byte[imageNumberOfRows * imageNumberOfColumns];
 
             int min = Math.Min(Math.Min(numberOfImages, numberOfLabels), MaxImagesToExport);
+            logger.LogInformation($"Exporting {min} images.");
             for (int i = 0; i < min; i++)
             {
                 await ImagesFileStream.ReadAsync(pixels);
@@ -193,11 +196,9 @@ namespace MNIST.IdxToImages
                 }
                 System.Drawing.Image image = bitmap;
 
-                logger.LogInformation($"Saving image '{fileName}'.");
+                logger.LogTrace($"Saving image '{fileName}'.");
                 image.Save(filePath, ImageFormat);
             }
-
-            logger.LogInformation($"Finished exporting {min} images.");
         }
 
         private DirectoryInfo EnsureOutputDirectory()
@@ -259,9 +260,14 @@ namespace MNIST.IdxToImages
             public string IdxImagesExtension { get; set; }
 
             [Option('n', "image-number", Required = false,
-                Default = 100,
+                Default = int.MaxValue,
                 HelpText = "Maxmimum number of images to export")]
-            public int IdxMaxImagesToExport { get; internal set; }
+            public int IdxMaxImagesToExport { get; set; }
+            
+            [Option(longName: "log-level", Required = false,
+                Default = "Information",
+                HelpText = "The minimum log level")]
+            public string LogLevel { get; set; }
         }
 
         public static IdxExporter IdxExporter { get; set; }
@@ -270,17 +276,21 @@ namespace MNIST.IdxToImages
 
         static void Main(string[] args)
         {
-            LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
-            {
-                builder.AddSimpleConsole(o =>
-                {
-                    o.IncludeScopes = true;
-                });
-            });
-
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o =>
                 {
+                    LoggerFactory = Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>
+                    {
+                        builder.AddSimpleConsole(o =>
+                        {
+                            o.IncludeScopes = true;
+                        });
+                        builder.SetMinimumLevel(Enum.Parse<LogLevel>(o.LogLevel));
+                    });
+
+                    ILogger<Program> logger = LoggerFactory.CreateLogger<Program>();
+
+                    Stopwatch stopwatch = Stopwatch.StartNew();
                     using (IdxExporter = new IdxExporter(o.IdxImagesFilePath,
                         o.IdxLabelsFilePath,
                         o.IdxImagesOutputPath,
@@ -290,6 +300,10 @@ namespace MNIST.IdxToImages
                     {
                         IdxExporter.Export().GetAwaiter().GetResult();
                     }
+
+                    stopwatch.Stop();
+                    logger.LogInformation($"Finished exporting images in" +
+                        $" {TimeSpan.FromMilliseconds(stopwatch.ElapsedMilliseconds).Humanize()}.");
                 });
         }
     }
