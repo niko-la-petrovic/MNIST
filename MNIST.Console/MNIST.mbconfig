@@ -1,0 +1,13 @@
+﻿{
+  "TrainingConfigurationVersion": 0,
+  "TrainingTime": 0,
+  "Scenario": {
+    "ScenarioType": "ImageClassification"
+  },
+  "DataSource": {
+    "DataSourceType": "Folder"
+  },
+  "Environment": {
+    "EnvironmentType": "LocalCPU"
+  }
+}
