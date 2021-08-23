@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MNIST.IdxToImages
 {
-    class IdxExporter : IDisposable
+    public class IdxExporter : IDisposable
     {
         public string ImagesFilePath { get; }
         public string LabelsFilePath { get; }
@@ -167,6 +167,8 @@ namespace MNIST.IdxToImages
                     filePath = Path.Join(outDirInfo.FullName, label, fileName);
                 else
                     filePath = Path.Join(outDirInfo.FullName, fileName);
+
+                // TODO write method to take PixelFormat as arugment and to write bytes accordingly
 
                 Bitmap bitmap = new Bitmap(imageNumberOfColumns,
                                                         imageNumberOfRows,
