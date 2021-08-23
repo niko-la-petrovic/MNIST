@@ -18,13 +18,8 @@
     <PackageReference Include="Humanizer" Version="2.11.10" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <PackageReference Include="Np.Imaging" Version="1.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Np.Imaging">
-      <HintPath>..\..\Np\src\Np.Imaging\bin\Release\net5.0\Np.Imaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

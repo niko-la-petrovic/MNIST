@@ -1,11 +1,12 @@
 ﻿{
   "TrainingConfigurationVersion": 0,
-  "TrainingTime": 0,
+  "TrainingTime": 2147482,
   "Scenario": {
     "ScenarioType": "ImageClassification"
   },
   "DataSource": {
-    "DataSourceType": "Folder"
+    "DataSourceType": "Folder",
+    "FolderPath": "G:\\ML\\data\\mnist"
   },
   "Environment": {
     "EnvironmentType": "LocalCPU"
