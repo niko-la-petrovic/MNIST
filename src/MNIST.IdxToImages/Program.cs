@@ -14,6 +14,12 @@ namespace MNIST.IdxToImages
 
         static void Main(string[] args)
         {
+            if(args.Length == 0)
+            {
+                Console.WriteLine("Argument list empty. Use --help.");
+                return;
+            }
+
             Parser.Default.ParseArguments<Options>(args)
                 .WithParsed(o =>
                 {
