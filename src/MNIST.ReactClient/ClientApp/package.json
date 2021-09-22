@@ -12,7 +12,7 @@
     "jimp": "^0.16.1",
     "jquery": "^3.5.1",
     "lodash": "^4.17.21",
-    "merge": "1.2.1",
+    "merge": "^2.1.1",
     "popper.js": "^1.16.0",
     "react": "16.11.0",
     "react-canvas-draw": "^1.1.1",
