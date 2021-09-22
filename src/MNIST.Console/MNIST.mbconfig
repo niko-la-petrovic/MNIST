@@ -1,14 +1,30 @@
 ﻿{
-  "TrainingConfigurationVersion": 0,
   "TrainingTime": 2147482,
-  "Scenario": {
-    "ScenarioType": "ImageClassification"
-  },
+  "Scenario": "ImageClassification",
   "DataSource": {
-    "DataSourceType": "Folder",
-    "FolderPath": "G:\\ML\\data\\mnist"
+    "Type": "Folder",
+    "Version": 1,
+    "FolderPath": "H:\\ML\\data\\mnist-5000"
   },
   "Environment": {
-    "EnvironmentType": "LocalCPU"
-  }
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 0,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 0,
+        "Type": "Trial",
+        "TrainerName": "ImageClassification",
+        "Score": 0.9334,
+        "RuntimeInSeconds": 7094.6
+      }
+    ],
+    "Pipeline": "[{\"EstimatorType\":\"MapValueToKey\",\"Inputs\":[\"Label\"],\"Outputs\":[\"Label\"]},{\"EstimatorType\":\"LoadRawImageBytes\",\"Inputs\":[\"ImageSource\"],\"Outputs\":[\"ImageSource_featurized\"]},{\"EstimatorType\":\"CopyColumns\",\"Inputs\":[\"ImageSource_featurized\"],\"Outputs\":[\"Features\"]},{\"LabelColumnName\":\"Label\",\"EstimatorType\":\"ImageClassificationMulti\",\"Inputs\":[\"Features\"],\"Outputs\":[\"Score\"]},{\"EstimatorType\":\"MapKeyToValue\",\"Inputs\":[\"PredictedLabel\"],\"Outputs\":[\"PredictedLabel\"]}]",
+    "MetricName": "MicroAccuracy"
+  },
+  "Type": "TrainingConfig",
+  "Version": 1
 }

@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+/saved_models
+/logs
+/.idea
+/plots
+/src/saved_models
+/src/MNIST.ReactClient/ClientApp/.vscode/settings.json
+/src/MNIST.ModelTraining/.idea
