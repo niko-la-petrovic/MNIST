@@ -21,7 +21,7 @@ logging.basicConfig(format='%(asctime)s %(message)s')
 logger = logging.getLogger('mnist')
 logger.setLevel(logging.DEBUG)
 print(tf.__version__)
-# tf.get_logger().setLevel('ERROR')
+tf.get_logger().setLevel('DEBUG')
 
 log_dir = "../logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -35,14 +35,27 @@ model_save_path_hdf5 = os.path.join(model_save_base_path, model_name + ".h5")
 model_save_path_json = os.path.join(model_save_base_path, model_name + ".json")
 model_save_path_onnx = os.path.join(model_save_base_path, model_name + ".onnx")
 data_dir = 'K:/ML/data/mnist'
+
 batch_size = 256
+epochs = 50
 img_height = 28
 img_width = 28
+seed = 123
+shuffle = True
+validation_split = 0.2
+
+random_transforms_layer = tf.keras.Sequential([
+    tf.keras.layers.experimental.preprocessing.RandomTranslation(0.05, 0.2, seed=seed)
+])
 
 
 def normalize_img(image, label):
     """Normalizes images: `uint8` -> `float32`."""
     return tf.cast(image, tf.float32) / 255., label
+
+
+def random_transform_img(image, label):
+    return random_transforms_layer(image), label
 
 
 def preview_img_dataset(dataset, processImage=None, message=None, cmap=None, vmin=0, vmax=255):
@@ -62,22 +75,22 @@ def preview_img_dataset(dataset, processImage=None, message=None, cmap=None, vmi
 
 ds_train = tf.keras.preprocessing.image_dataset_from_directory(
     directory=data_dir,
-    validation_split=0.2,
+    validation_split=validation_split,
     batch_size=batch_size,
     subset='training',
-    seed=123,
-    shuffle=True,
+    seed=seed,
+    shuffle=shuffle,
     color_mode="grayscale",
     image_size=(img_height, img_width)
 )
 
 ds_test = tf.keras.preprocessing.image_dataset_from_directory(
     directory=data_dir,
-    validation_split=0.2,
+    validation_split=validation_split,
     batch_size=batch_size,
     subset='validation',
-    seed=123,
-    shuffle=True,
+    seed=seed,
+    shuffle=shuffle,
     color_mode="grayscale",
     image_size=(img_height, img_width)
 )
@@ -89,15 +102,15 @@ preview_img_dataset(ds_train, message='Before processing', cmap='gray')
 
 AUTOTUNE = tf.data.AUTOTUNE
 
-ds_train = ds_train.map(
-    normalize_img, num_parallel_calls=AUTOTUNE)
-ds_train = ds_train.cache()
-ds_train = ds_train.prefetch(buffer_size=AUTOTUNE)
+ds_train = ds_train.map(normalize_img, num_parallel_calls=AUTOTUNE) \
+    .map(random_transform_img, num_parallel_calls=AUTOTUNE) \
+    .cache() \
+    .prefetch(buffer_size=AUTOTUNE)
 
-ds_test = ds_test.map(
-    normalize_img, num_parallel_calls=AUTOTUNE)
-ds_test = ds_test.cache()
-ds_test = ds_test.prefetch(buffer_size=AUTOTUNE)
+ds_test = ds_test.map(normalize_img, num_parallel_calls=AUTOTUNE) \
+    .map(random_transform_img, num_parallel_calls=AUTOTUNE) \
+    .cache() \
+    .prefetch(buffer_size=AUTOTUNE)
 
 preview_img_dataset(ds_train,
                     processImage=lambda image: image.numpy().dot(255).astype("uint8"),
@@ -125,7 +138,7 @@ model.compile(
     metrics=[tf.keras.metrics.SparseCategoricalAccuracy()],
 )
 
-model.summary();
+model.summary()
 
 logger.info("Starting training.")
 
@@ -134,7 +147,7 @@ model.fit(
     ds_train,
     use_multiprocessing=True,
     workers=8,
-    epochs=50,
+    epochs=epochs,
     validation_data=ds_test,
     callbacks=[tensorboard_callback]
 )
