@@ -1,0 +1,13 @@
+.overlay-container{
+    position:relative;
+}
+
+.overlay{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.bounding-box{
+    border: rgba(255,255,255, 0.2) solid 1px;
+}

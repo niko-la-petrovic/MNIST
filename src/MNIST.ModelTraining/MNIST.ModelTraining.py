@@ -139,6 +139,8 @@ model.fit(
     callbacks=[tensorboard_callback]
 )
 
+logger.info("Finished training.")
+
 model.save(model_save_path)
 model.save(model_save_path_hdf5)
 json_config = model.to_json()
@@ -148,5 +150,3 @@ with open(model_save_path_json, 'w') as f:
 
 onnx_model, _ = tf2onnx.convert.from_keras(model)
 onnx.save(onnx_model, model_save_path_onnx)
-
-logger.info("Finished training.")
