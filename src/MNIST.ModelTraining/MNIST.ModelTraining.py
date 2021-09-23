@@ -117,11 +117,14 @@ preview_img_dataset(ds_train,
                     message='After preprocessing', cmap='gray')
 
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu',
+    tf.keras.layers.Conv2D(filters=64, kernel_size=(9, 9), activation='relu',
                            input_shape=(img_height, img_height, 1), name="input"),
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
     tf.keras.layers.Dropout(0.3),
     tf.keras.layers.Conv2D(filters=128, kernel_size=(3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+    tf.keras.layers.Dropout(0.3),
+    tf.keras.layers.Conv2D(filters=256, kernel_size=(3, 3), activation='relu'),
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
     tf.keras.layers.Dropout(0.3),
     tf.keras.layers.Flatten(),
