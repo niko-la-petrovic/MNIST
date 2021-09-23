@@ -6,7 +6,7 @@ import { Prediction } from 'WebApi/models/prediction';
 import useSubmitPredictionInput from '../shared/SubmitPredictionInput';
 import Jimp from 'jimp';
 import { toInteger } from 'lodash';
-import { Container } from 'react-bootstrap'
+import { Container } from 'reactstrap'
 import './Draw.css';
 
 function Draw() {
