@@ -142,6 +142,7 @@ model.compile(
 )
 
 model.summary()
+tf.keras.utils.plot_model(model, show_shapes=True)
 
 logger.info("Starting training.")
 

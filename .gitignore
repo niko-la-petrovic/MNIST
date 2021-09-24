@@ -369,3 +369,4 @@ FodyWeavers.xsd
 /src/saved_models
 /src/MNIST.ReactClient/ClientApp/.vscode/settings.json
 /src/MNIST.ModelTraining/.idea
+/src/MNIST.ModelTraining/model.png
