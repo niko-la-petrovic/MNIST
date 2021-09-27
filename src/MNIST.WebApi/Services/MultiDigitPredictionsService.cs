@@ -94,21 +94,35 @@ namespace MNIST.WebApi.Services
 
                     var segmentedInputImageData = pointContours.Select(pointContour =>
                     {
-                        // TODO take the greater dimension (height or width), expand it by 15%
-                        // and then apply that size to both dimensions (to keep a square aspect ratio)
-                        
                         // TODO take the area of the entire image and the area of each bounding rect;
                         // if the area of the bounded rect is less than 20%, ignore that contour
+                        // return null and perform Where != null after
                         Rect rect = Cv2.MinAreaRect(pointContour).BoundingRect();
-                        Rect extendedRect = Rect.Empty;
+                        Rect extendedRect = rect;
                         {
-                            int heightFraction = (int)(rect.Height * 0.15);
-                            int widthFraction = (int)(rect.Width * 0.15);
+                            int greaterDimension = 0;
+                            double difference = Math.Abs(rect.Height - rect.Width);
+                            if (rect.Height > rect.Width)
+                            {
+                                greaterDimension = rect.Height;
+                                extendedRect.Left = Math.Max(0, (int)Math.Abs(rect.Left - difference / 2.0));
+                                double tempRight = Math.Min(size.Width, (int)(rect.Right + difference / 2.0));
+                                extendedRect.Width = (int)(tempRight - extendedRect.Left);
+                            }
+                            else
+                            {
+                                greaterDimension = rect.Width;
+                                extendedRect.Top = Math.Max(0, (int)Math.Abs(rect.Top - difference / 2.0));
+                                double tempBottom = Math.Min(size.Height, (int)(rect.Bottom + difference / 2.0));
+                                extendedRect.Height = (int)(tempBottom - extendedRect.Top);
+                            }
 
-                            int top = Math.Max(0, Math.Abs(rect.Top - heightFraction));
-                            int left = Math.Max(0, Math.Abs(rect.Left - widthFraction));
-                            int right = Math.Min(size.Width, rect.Right + widthFraction);
-                            int bottom = Math.Min(size.Height, rect.Bottom + heightFraction);
+                            int fraction = (int)(greaterDimension * 0.15);
+
+                            int top = Math.Max(0, Math.Abs(extendedRect.Top - fraction));
+                            int left = Math.Max(0, Math.Abs(extendedRect.Left - fraction));
+                            int right = Math.Min(size.Width, extendedRect.Right + fraction);
+                            int bottom = Math.Min(size.Height, extendedRect.Bottom + fraction);
                             extendedRect = new Rect(left, top, right - left, bottom - top);
                         }
 
@@ -117,17 +131,20 @@ namespace MNIST.WebApi.Services
                         imageSegment.SaveImage(copyToPath);
 
                         return new
-                        InputImageData
                         {
-                            ImagePath = copyToPath,
-                            Label = inputImage.Label
+                            InputImageData = new InputImageData
+                            {
+                                ImagePath = copyToPath,
+                                Label = inputImage.Label
+                            },
+                            MinXCoord = pointContour.First().X
                         };
-                    }).ToList();
+                    }).OrderBy(a => a.MinXCoord).ToList();
 
                     var keyValuePair = new KeyValuePair<InputImageData, IEnumerable<InputImageData>>
                     (
                         inputImage,
-                        segmentedInputImageData
+                        segmentedInputImageData.Select(a => a.InputImageData)
                     );
 
                     return keyValuePair;

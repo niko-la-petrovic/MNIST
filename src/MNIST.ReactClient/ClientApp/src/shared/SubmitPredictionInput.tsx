@@ -9,16 +9,15 @@ import { InputGroup, FormControl } from 'react-bootstrap';
 
 function renderLabel(label: string) {
     if (!label)
-        return ('')
+        return ('');
 
     return (
         <InputGroup className="mb-3">
             <InputGroup.Text>Label</InputGroup.Text>
-            <FormControl placeholder="Label">
-                {label}
-            </FormControl>
+            <FormControl placeholder="Label" value={label}
+                readOnly={true} />
         </InputGroup>
-    )
+    );
 }
 
 function renderLabelProbabilityPairs(renderLabelProbabilityPairs: { [key: string]: number },

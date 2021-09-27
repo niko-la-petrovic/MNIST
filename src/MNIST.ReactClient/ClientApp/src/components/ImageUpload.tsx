@@ -10,6 +10,8 @@ import { Button, InputGroup, FormControl } from 'react-bootstrap';
 import { toInteger } from 'lodash';
 import './ImageUpload.css'
 
+// TODO redux state
+
 function ImageUpload() {
 
     const [openFileSelector, { filesContent, loading, errors }] = useFilePicker({

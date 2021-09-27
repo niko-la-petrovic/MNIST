@@ -9,6 +9,8 @@ import { toInteger } from 'lodash';
 import { Container, Button, ButtonGroup, FormControl, InputGroup } from 'react-bootstrap';
 import './Draw.css';
 
+// TODO redux state
+
 function Draw() {
     const [prediction, setPrediction] = useState<Prediction>({ inputImage: null, label: null, labelProbabilityPairs: null, labelScorePairs: null });
     const canvasDrawRef: any = useRef();
