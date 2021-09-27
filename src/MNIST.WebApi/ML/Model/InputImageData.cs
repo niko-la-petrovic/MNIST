@@ -1,4 +1,5 @@
 ﻿using Microsoft.ML.Data;
+using System;
 
 namespace MNIST.WebApi
 {
@@ -9,5 +10,17 @@ namespace MNIST.WebApi
 
         [LoadColumn(1)]
         public string Label;
+
+        public override bool Equals(object obj)
+        {
+            return obj is InputImageData data &&
+                   ImagePath == data.ImagePath &&
+                   Label == data.Label;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ImagePath, Label);
+        }
     }
 }

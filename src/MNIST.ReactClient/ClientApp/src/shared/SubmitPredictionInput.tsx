@@ -5,16 +5,24 @@ import ImageLabelPair from '../shared/interfaces/ImageLabelPair';
 import ColorScale from "color-scales"
 import _ from "lodash";
 import './SubmitPredictionInput.css'
+import { InputGroup, FormControl } from 'react-bootstrap';
 
 function renderLabel(label: string) {
-    if (label)
-        return (<p>Label: {label}</p>)
+    if (!label)
+        return ('')
 
-    return ('');
+    return (
+        <InputGroup className="mb-3">
+            <InputGroup.Text>Label</InputGroup.Text>
+            <FormControl placeholder="Label">
+                {label}
+            </FormControl>
+        </InputGroup>
+    )
 }
 
 function renderLabelProbabilityPairs(renderLabelProbabilityPairs: { [key: string]: number },
-    precision : number = 2) {
+    precision: number = 2) {
     if (!renderLabelProbabilityPairs) {
         return ('');
     }
@@ -56,13 +64,16 @@ function renderLabelScorePairs(renderLabelScorePairs: { [key: string]: number })
     );
 }
 
-async function submitLabelImagePairs(imageLabelPairs: ImageLabelPair[]) {
+async function submitLabelImagePairs(imageLabelPairs: ImageLabelPair[], multiDigit: boolean = false) {
+    let files: File[] = imageLabelPairs.map((pair, index) =>
+        new File([pair.image.content as any], pair.image.name, { type: "application/octet-stream" })
+    );
+    let fileLabels: { [key: string]: string } = {};
+    imageLabelPairs.forEach(pair => fileLabels[pair.image.name.split('.')[0]] = pair.label ?? "");
+
     let response = await PredictionsApiFactory({},
         process.env.REACT_APP_WEBAPI_BASE_URL)
-        .apiPredictionsPredictPost(imageLabelPairs.map((pair, index) => {
-            return new File([pair.image.content as any], pair.image.name, { type: "application/octet-stream" });
-        }
-        ));
+        .apiPredictionsPredictPost(files, fileLabels, multiDigit);
 
     if (response.status === 200) {
         return [...response.data];
@@ -71,6 +82,9 @@ async function submitLabelImagePairs(imageLabelPairs: ImageLabelPair[]) {
     return null;
 }
 
+// TODO add bool: render only max probability
+// TODO add number input: maximum pairs
+// TODO show scores?
 function useSubmitPredictionInput(precision: number = 2) {
     return {
         submitLabelImagePairs: submitLabelImagePairs,
@@ -88,7 +102,7 @@ function useSubmitPredictionInput(precision: number = 2) {
                     <div>{renderLabelProbabilityPairs(
                         prediction.labelProbabilityPairs as { [key: string]: number },
                         precision
-                        )}</div>
+                    )}</div>
                     {/* <div>Label Score Pairs:{renderLabelScorePairs(prediction.labelScorePairs as { [key: string]: number })}</div> */}
                 </div>
             )

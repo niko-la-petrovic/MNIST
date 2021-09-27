@@ -27,10 +27,11 @@ export const PredictionsApiAxiosParamCreator = function (configuration?: Configu
          * 
          * @param {Array&lt;File&gt;} [files] 
          * @param {{ [key, string]: string;}} [fileLabels] 
+         * @param {boolean} [multiDigit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiPredictionsPredictPost: async (files?: Array<File>, fileLabels?: { [key: string]: string; }, options: any = {}): Promise<RequestArgs> => {
+        apiPredictionsPredictPost: async (files?: Array<File>, fileLabels?: { [key: string]: string; }, multiDigit?: boolean, options: any = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/Predictions/predict`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, 'https://example.com');
@@ -43,6 +44,10 @@ export const PredictionsApiAxiosParamCreator = function (configuration?: Configu
             const localVarQueryParameter = {} as any;
             const localVarFormParams = new FormData();
 
+            if (multiDigit !== undefined) {
+                localVarQueryParameter['multiDigit'] = multiDigit;
+            }
+
             if (files) {
                 files.forEach((element) => {
                     localVarFormParams.append('Files', element as any);
@@ -50,7 +55,7 @@ export const PredictionsApiAxiosParamCreator = function (configuration?: Configu
             }
 
             if (fileLabels !== undefined) {
-                localVarFormParams.append('FileLabels', fileLabels as any);
+                Object.entries(fileLabels).forEach(label => localVarFormParams.append('FileLabels' + "." + label[0], label[1]));
             }
 
             localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
@@ -84,11 +89,12 @@ export const PredictionsApiFp = function (configuration?: Configuration) {
          * 
          * @param {Array&lt;File&gt;} [files] 
          * @param {{ [key, string]: string;}} [fileLabels] 
+         * @param {boolean} [multiDigit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Prediction>>> {
-            const localVarAxiosArgs = await PredictionsApiAxiosParamCreator(configuration).apiPredictionsPredictPost(files, fileLabels, options);
+        async apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, multiDigit?: boolean, options?: any): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Prediction>>> {
+            const localVarAxiosArgs = await PredictionsApiAxiosParamCreator(configuration).apiPredictionsPredictPost(files, fileLabels, multiDigit, options);
             return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
                 const axiosRequestArgs = { ...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url };
                 return axios.request(axiosRequestArgs);
@@ -107,11 +113,12 @@ export const PredictionsApiFactory = function (configuration?: Configuration, ba
          * 
          * @param {Array&lt;string&gt;} [files] 
          * @param {{ [key, string]: string;}} [fileLabels] 
+         * @param {boolean} [multiDigit] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, options?: any): AxiosPromise<Array<Prediction>> {
-            return PredictionsApiFp(configuration).apiPredictionsPredictPost(files, fileLabels, options).then((request) => request(axios, basePath));
+        apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, multiDigit?: boolean, options?: any): AxiosPromise<Array<Prediction>> {
+            return PredictionsApiFp(configuration).apiPredictionsPredictPost(files, fileLabels, multiDigit, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -127,11 +134,12 @@ export class PredictionsApi extends BaseAPI {
      * 
      * @param {Array&lt;File&gt;} [files] 
      * @param {{ [key, string]: string;}} [fileLabels] 
+     * @param {boolean} [multiDigit] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PredictionsApi
      */
-    public apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, options?: any) {
-        return PredictionsApiFp(this.configuration).apiPredictionsPredictPost(files, fileLabels, options).then((request) => request(this.axios, this.basePath));
+    public apiPredictionsPredictPost(files?: Array<File>, fileLabels?: { [key: string]: string; }, multiDigit?: boolean, options?: any) {
+        return PredictionsApiFp(this.configuration).apiPredictionsPredictPost(files, fileLabels, multiDigit, options).then((request) => request(this.axios, this.basePath));
     }
 }

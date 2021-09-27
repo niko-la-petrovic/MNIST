@@ -15,15 +15,19 @@ namespace MNIST.WebApi.Controllers
     public class PredictionsController : ControllerBase
     {
         private readonly IPredictionsService _predictionsService;
+        private readonly IMultiDigitPredictionsService _multiDigitPredictionsService;
 
-        public PredictionsController(IPredictionsService predictionsService)
+        public PredictionsController(IPredictionsService predictionsService, IMultiDigitPredictionsService multiNumberPredictionsService)
         {
             _predictionsService = predictionsService ?? throw new ArgumentNullException(nameof(predictionsService));
+            _multiDigitPredictionsService = multiNumberPredictionsService ?? throw new ArgumentNullException(nameof(multiNumberPredictionsService));
         }
 
         [HttpPost("predict")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Prediction>))]
-        public async Task<IActionResult> GetPrediction([FromForm] PredictionInput predictionInput)
+        public async Task<IActionResult> GetPrediction(
+            [FromForm] PredictionInput predictionInput,
+            bool multiDigit)
         {
             if (!predictionInput.Files.Any())
                 return BadRequest("No files provided.");
@@ -31,7 +35,10 @@ namespace MNIST.WebApi.Controllers
             IEnumerable<Prediction> predictions;
             try
             {
-                predictions = await _predictionsService.GetPredictionsAsync(predictionInput);
+                if (!multiDigit)
+                    predictions = await _predictionsService.GetPredictionsAsync(predictionInput);
+                else
+                    predictions = await _multiDigitPredictionsService.GetPredictionsAsync(predictionInput);
             }
             catch (FileNotFoundException ex)
             {

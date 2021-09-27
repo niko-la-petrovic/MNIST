@@ -30,6 +30,7 @@ namespace MNIST.WebApi
         {
             services.AddTransient<IOnnxModelScorer, OnnxModelScorer>();
             services.AddTransient<IPredictionsService, PredictionsService>();
+            services.AddTransient<IMultiDigitPredictionsService, MultiDigitPredictionsService>();
 
             services.AddRazorPages();
             services.AddControllers();

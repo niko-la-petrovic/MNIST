@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { Collapse, Container, Nav, Navbar, NavbarBrand, NavItem, NavLink } from 'react-bootstrap';
 import { BrowserRouter, Link } from 'react-router-dom';
+import {LinkContainer} from 'react-router-bootstrap'
 import './NavMenu.css';
 
 export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }> {
@@ -11,21 +12,23 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
     public render() {
         return (
             <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" light>
+                <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" bg="light">
                     <Container>
-                        <NavbarBrand tag={Link} to="/">MNIST.ReactClient</NavbarBrand>
-                        <NavbarToggler onClick={this.toggle} className="mr-2" />
-                        <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={this.state.isOpen} navbar>
+                        <Navbar.Brand>MNIST.ReactClient</Navbar.Brand>
+                        <Navbar.Toggle onClick={this.toggle} className="mr-2" />
+                        <Collapse className="d-sm-inline-flex flex-sm-row-reverse" appear={this.state.isOpen}>
                             <ul className="navbar-nav flex-grow">
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/image-upload">Image Upload</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/draw">Draw</NavLink>
-                                </NavItem>
+                               <Nav className="me-auto">
+                                    <LinkContainer to="/">
+                                        <Nav.Link className="text-dark">Home</Nav.Link>
+                                    </LinkContainer>
+                                    <LinkContainer to="/image-upload">
+                                        <NavLink className="text-dark">Image Upload</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to="/draw">
+                                        <NavLink className="text-dark">Draw</NavLink>
+                                    </LinkContainer>
+                               </Nav>
                             </ul>
                         </Collapse>
                     </Container>
