@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Route } from 'react-router';
-import Layout from './components/Layout';
-import Home from './components/Home';
-import ImageUpload from './components/ImageUpload';
-import Draw from './components/Draw';
+import Layout from './components/layout/Layout';
+import Home from './components/home/Home';
+import ImageUpload from './components/imageUpload/ImageUpload';
+import Draw from './components/draw/Draw';
 import './custom.css'
 
 export default () => (

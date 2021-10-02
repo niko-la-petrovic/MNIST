@@ -4,8 +4,8 @@ import { Prediction } from 'WebApi/models/prediction';
 import ImageLabelPair from '../shared/interfaces/ImageLabelPair';
 import ColorScale from "color-scales"
 import _ from "lodash";
-import './SubmitPredictionInput.css'
 import { InputGroup, FormControl } from 'react-bootstrap';
+import './SubmitPredictionInput.css'
 
 function renderLabel(label: string) {
     if (!label)
@@ -21,7 +21,8 @@ function renderLabel(label: string) {
 }
 
 function renderLabelProbabilityPairs(renderLabelProbabilityPairs: { [key: string]: number },
-    precision: number = 2) {
+    precision: number = 2,
+    maxPredictionPairs: number = Number.MAX_SAFE_INTEGER) {
     if (!renderLabelProbabilityPairs) {
         return ('');
     }
@@ -33,6 +34,7 @@ function renderLabelProbabilityPairs(renderLabelProbabilityPairs: { [key: string
         <div>Label Probability Pairs:
             {Object.entries(renderLabelProbabilityPairs)
                 .sort((o1, o2) => o2[1] - o1[1])
+                .slice(0, maxPredictionPairs)
                 .map((labelProbabilityPair, index) => {
                     return (
                         <div style={{ color: colorScale.getColor(index).toHexString() }}
@@ -77,14 +79,12 @@ async function submitLabelImagePairs(imageLabelPairs: ImageLabelPair[], multiDig
     if (response.status === 200) {
         return [...response.data];
     }
-
-    return null;
+    else
+        throw new Error(`Failed to upload image data: ${response.status} ${response.statusText}.`);
 }
 
-// TODO add bool: render only max probability
-// TODO add number input: maximum pairs
 // TODO show scores?
-function useSubmitPredictionInput(precision: number = 2) {
+function useSubmitPredictionInput(precision: number = 2, maxPredictionPairs: number = Number.MAX_SAFE_INTEGER) {
     return {
         submitLabelImagePairs: submitLabelImagePairs,
         renderLabelProbabilityPairs: renderLabelProbabilityPairs,
@@ -98,10 +98,13 @@ function useSubmitPredictionInput(precision: number = 2) {
                 <div key={prediction.inputImage}>
                     <p>{prediction.inputImage}</p>
                     {renderLabel(prediction.label)}
-                    <div>{renderLabelProbabilityPairs(
-                        prediction.labelProbabilityPairs as { [key: string]: number },
-                        precision
-                    )}</div>
+                    <div>
+                        {renderLabelProbabilityPairs(
+                            prediction.labelProbabilityPairs as { [key: string]: number },
+                            precision,
+                            maxPredictionPairs
+                        )}
+                    </div>
                     {/* <div>Label Score Pairs:{renderLabelScorePairs(prediction.labelScorePairs as { [key: string]: number })}</div> */}
                 </div>
             )

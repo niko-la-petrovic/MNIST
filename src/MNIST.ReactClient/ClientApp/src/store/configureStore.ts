@@ -3,6 +3,7 @@ import thunk from 'redux-thunk';
 import { connectRouter, routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
 import { ApplicationState, reducers } from './';
+import { reduxBatch } from '@manaflair/redux-batch';
 
 export default function configureStore(history: History, initialState?: ApplicationState) {
     const middleware = [
@@ -15,7 +16,7 @@ export default function configureStore(history: History, initialState?: Applicat
         router: connectRouter(history)
     });
 
-    const enhancers = [];
+    const enhancers = [reduxBatch];
     const windowIfDefined = typeof window === 'undefined' ? null : window as any; // eslint-disable-line @typescript-eslint/no-explicit-any
     if (windowIfDefined && windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__) {
         enhancers.push(windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__());
@@ -26,4 +27,4 @@ export default function configureStore(history: History, initialState?: Applicat
         initialState,
         compose(applyMiddleware(...middleware), ...enhancers)
     );
-}
+};

@@ -23,6 +23,7 @@ namespace MNIST.WebApi.Services
 
         public override async Task<IEnumerable<Prediction>> GetPredictionsAsync(PredictionInput predictionInput)
         {
+            // TODO include original file name in prediction for front end
             ConcurrentDictionary<string, string> uploadedFiles = await UploadFiles(predictionInput);
 
             List<InputImageData> initialImages = PrepareInputImageData(predictionInput, uploadedFiles);
@@ -67,6 +68,8 @@ namespace MNIST.WebApi.Services
                     labels = newLabels;
                     scores = newScores;
                 }
+
+                // TODO maybe apply softmax individually before calculating probabilities?
 
                 outPrediction.LabelScorePairs = new Dictionary<string, double>(labels.Zip(scores)
                         .Select(z => new KeyValuePair<string, double>(z.First, z.Second)));

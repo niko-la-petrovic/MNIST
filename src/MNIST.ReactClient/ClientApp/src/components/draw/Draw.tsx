@@ -2,27 +2,39 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import CanvasDraw from "react-canvas-draw";
 import { decode } from 'base64-arraybuffer';
-import { Prediction } from 'WebApi/models/prediction';
-import useSubmitPredictionInput from '../shared/SubmitPredictionInput';
+import useSubmitPredictionInput from '../../shared/SubmitPredictionInput';
 import Jimp from 'jimp';
 import { toInteger } from 'lodash';
 import { Container, Button, ButtonGroup, FormControl, InputGroup } from 'react-bootstrap';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { clearPredictions, selectDrawData, selectImageLabelPairs, selectMaxPredictionPairs, selectMultiDigit, selectPrecision, selectPredictions, setDrawData, setFirstImageLabelPair, setMaxPredictionPairs, setMultiDigit, setPrecision, setPredictions, updateLabel } from '../../components/draw/drawSlice';
+import ImageLabelPair from '../../shared/interfaces/ImageLabelPair';
+import { toast } from 'react-toastify';
+import { useHistory, useLocation } from 'react-router-dom';
 import './Draw.css';
 
-// TODO redux state
-
 function Draw() {
-    const [prediction, setPrediction] = useState<Prediction>({ inputImage: null, label: null, labelProbabilityPairs: null, labelScorePairs: null });
+    const dispatch = useAppDispatch();
+    const location = useLocation();
+    const history = useHistory();
+
+    const precision = useAppSelector(selectPrecision);
+    const maxPredictionPairs = useAppSelector(selectMaxPredictionPairs);
+    const multiDigit = useAppSelector(selectMultiDigit);
+    const imageLabelPairs = useAppSelector(selectImageLabelPairs);
+    const predictions = useAppSelector(selectPredictions);
+    const drawData = useAppSelector(selectDrawData);
+
     const canvasDrawRef: any = useRef();
     const [canvasWidth, setCanvasWidth] = useState(400);
     const [canvasHeight, setCanvasHeight] = useState(400);
     const [canvasSquares, setCanvasSquares] = useState(1);
-    const [precision, setPrecision] = useState(2);
-    const [label, setLabel] = useState("");
-    const [multiDigit, setMultiDigit] = useState(false);
-    const { submitLabelImagePairs, renderPrediction } = useSubmitPredictionInput(precision);
     const [overlayWidth, setOverlayWidth] = useState(0);
     const [overlayHeight, setOverlayHeight] = useState(0);
+
+    const { submitLabelImagePairs, renderPrediction } = useSubmitPredictionInput(precision);
+
+    dispatch(setDrawData(drawData));
 
     useEffect(() => {
         setOverlayWidth(canvasWidth);
@@ -33,12 +45,21 @@ function Draw() {
     }, [canvasHeight]);
 
     useEffect(() => {
-        setCanvasWidth(400*canvasSquares);
+        setCanvasWidth(400 * canvasSquares);
     }, [canvasSquares]);
+
+    history.block((location, action) => {
+        dispatch(setDrawData(canvasDrawRef?.current?.getSaveData()));
+    });
+
+    useEffect(() => {
+        if (drawData && drawData.length > 0)
+            canvasDrawRef?.current?.loadSaveData(drawData);
+    }, [drawData]);
 
     const clear = () => {
         canvasDrawRef.current.clear();
-        setPrediction({ inputImage: null, label: null, labelProbabilityPairs: null, labelScorePairs: null });
+        dispatch(clearPredictions());
     };
 
     const uploadImage = async () => {
@@ -53,17 +74,33 @@ function Draw() {
         let newBuffer = await blackBackground
             .composite(image, 0, 0)
             .getBufferAsync("image/" + extension);
-        let result = await submitLabelImagePairs([
-            {
-                image: {
-                    content: newBuffer as any,
-                    lastModified: file.lastModified,
-                    name: file.name
-                }, label: label
-            }
+
+        let imageLabelPair: ImageLabelPair = {
+            image: {
+                content: newBuffer as any,
+                lastModified: file.lastModified,
+                name: file.name
+            }, label: imageLabelPairs[0].label
+        };
+        dispatch(setFirstImageLabelPair(imageLabelPair));
+
+        let resultPromise = submitLabelImagePairs([
+            imageLabelPair,
         ], multiDigit);
+
+        toast.promise(resultPromise, {
+            pending: 'Submitting...',
+            error: {
+                render({ data }) {
+                    return `${data}`;
+                }
+            },
+            success: `Success.`
+        });
+
+        let result = await resultPromise;
         if (result != null && result.length > 0) {
-            setPrediction(result[0]);
+            dispatch(setPredictions(result));
         }
     };
 
@@ -86,14 +123,14 @@ function Draw() {
     };
 
     return (
-        <div style={{ maxWidth: 400 }}>
+        <div className="mt-2" style={{ maxWidth: 400 }}>
             <div className="mb-3">
                 <Button onClick={e => uploadImage()} variant="primary" className="me-3">Upload</Button>
                 <Button onClick={e => clear()} variant="danger">Clear</Button>
             </div>
             <div className="form-check mb-3">
                 <input className="form-check-input" type="checkbox"
-                    checked={multiDigit} onChange={e => setMultiDigit(e.target.checked)}
+                    checked={multiDigit} onChange={e => dispatch(setMultiDigit(e.target.checked))}
                     id="multidigit" name="multidigit" />
                 <label className="form-check-label" htmlFor="multidigit">
                     Multiple digits
@@ -105,8 +142,8 @@ function Draw() {
                     placeholder="Label"
                     aria-label="Label"
                     aria-describedby="label-label"
-                    value={label}
-                    onChange={e => setLabel(e.target.value)}
+                    value={imageLabelPairs[0]?.label ?? ""}
+                    onChange={e => dispatch(updateLabel({ newLabel: e.target.value, pair: imageLabelPairs[0] }))}
                 />
             </InputGroup>
             <div>
@@ -140,9 +177,19 @@ function Draw() {
                     aria-describedby="precision-label"
                     className="form-control"
                     value={precision}
-                    onChange={e => setPrecision(toInteger(e.target.value))} />
+                    onChange={e => dispatch(setPrecision(toInteger(e.target.value)))} />
             </InputGroup>
-            {renderPrediction(prediction)}
+            <InputGroup className="my-3">
+                <InputGroup.Text id="max-prediction-pairs-label">Maximum Prediction Pairs</InputGroup.Text>
+                <input type="number"
+                    id="max-prediction-pairs-input"
+                    name="max-prediction-pairs-label"
+                    aria-describedby="max-prediction-pairs-label"
+                    className="form-control"
+                    value={maxPredictionPairs}
+                    onChange={e => dispatch(setMaxPredictionPairs(toInteger(e.target.value)))} />
+            </InputGroup>
+            {renderPrediction(predictions[0])}
         </div>
     );
 }
