@@ -10,12 +10,11 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { clearPredictions, selectDrawData, selectImageLabelPairs, selectMaxPredictionPairs, selectMultiDigit, selectPrecision, selectPredictions, setDrawData, setFirstImageLabelPair, setMaxPredictionPairs, setMultiDigit, setPrecision, setPredictions, updateLabel } from '../../components/draw/drawSlice';
 import ImageLabelPair from '../../shared/interfaces/ImageLabelPair';
 import { toast } from 'react-toastify';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import './Draw.css';
 
 function Draw() {
     const dispatch = useAppDispatch();
-    const location = useLocation();
     const history = useHistory();
 
     const precision = useAppSelector(selectPrecision);
@@ -122,11 +121,16 @@ function Draw() {
         );
     };
 
+    const undoCanvas = () => {
+        canvasDrawRef?.current?.undo();
+    };
+
     return (
         <div className="mt-2" style={{ maxWidth: 400 }}>
             <div className="mb-3">
                 <Button onClick={e => uploadImage()} variant="primary" className="me-3">Upload</Button>
-                <Button onClick={e => clear()} variant="danger">Clear</Button>
+                <Button onClick={e => clear()} variant="danger" className="me-3">Clear</Button>
+                <Button onClick={e => undoCanvas()} variant="secondary">Undo</Button>
             </div>
             <div className="form-check mb-3">
                 <input className="form-check-input" type="checkbox"

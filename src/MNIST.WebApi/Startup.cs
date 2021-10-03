@@ -96,6 +96,8 @@ namespace MNIST.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MNIST API V1");
             });
 
+            // TODO use base path for swagger doc, etc.
+
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
