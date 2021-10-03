@@ -116,6 +116,7 @@ preview_img_dataset(ds_train,
                     processImage=lambda image: image.numpy().dot(255).astype("uint8"),
                     message='After preprocessing', cmap='gray')
 
+# TODO experiment with Conv2d stride param.
 model = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(filters=64, kernel_size=(9, 9), activation='relu',
                            input_shape=(img_height, img_height, 1), name="input"),
